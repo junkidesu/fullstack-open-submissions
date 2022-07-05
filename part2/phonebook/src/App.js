@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
 import personService from './services/persons'
 
 const Filter = ({ value, onChange }) => (
@@ -22,13 +21,24 @@ const PersonForm = ({ onSubmit, name, onNameChange, number, onNumberChange }) =>
   </form>
 )
 
-const Persons = ({ persons }) => (
+const Persons = ({ persons, deletePerson }) => (
   <div>
-    {persons.map(person => <Person key={person.id} person={person} />)}
+    {persons.map(person =>
+      <Person
+        key={person.id}
+        person={person}
+        deletePerson={() => deletePerson(person)}
+      />)}
   </div>
 )
 
-const Person = ({ person }) => <p>{person['name']} {person['number']}</p>
+const Person = ({ person, deletePerson }) => {
+  return (
+    <div>
+      {person['name']} {person['number']} <button onClick={deletePerson}>delete</button>
+    </div>
+  )
+}
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -58,7 +68,6 @@ const App = () => {
     const newPerson = {
       name: newName,
       number: newNumber
-      //id: persons.length + 1
     }
 
 
@@ -75,6 +84,16 @@ const App = () => {
     }
   }
 
+  const deletePerson = person => {
+    if (window.confirm(`Delete ${person['name']}?`)) {
+      personService
+        .remove(person.id)
+        .then(response => {
+          const newPersons = persons.filter(p => p.id !== person.id)
+          setPersons(newPersons)
+        })
+    }
+  }
 
   return (
     <div>
@@ -94,7 +113,10 @@ const App = () => {
 
       <h3>Numbers</h3>
 
-      <Persons persons={filteredPersons} />
+      <Persons
+        persons={filteredPersons}
+        deletePerson={deletePerson}
+      />
     </div>
   )
 }
