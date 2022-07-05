@@ -58,30 +58,43 @@ const App = () => {
     person.name.toLowerCase().includes(filter.toLowerCase())
   )
 
-  const alreadyAdded = (person) => (
-    persons.some(p => p.name === person.name)
-  )
-
-  const addPerson = (event) => {
+  const handleAdd = (event) => {
     event.preventDefault()
 
+    if (persons.some(p => p.name === newName)) {
+      if (window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) {
+        replaceNumber()
+      }
+    } else {
+      addPerson()
+    }
+
+    setNewName('')
+    setNewNumber('')
+  }
+
+  const replaceNumber = () => {
+    const person = persons.find(p => p.name === newName)
+    const changedPerson = { ...person, number: newNumber }
+
+    personService
+      .update(changedPerson)
+      .then(newPerson => {
+        setPersons(persons.map(p => p.id !== newPerson.id ? p : newPerson))
+      })
+  }
+
+  const addPerson = () => {
     const newPerson = {
       name: newName,
       number: newNumber
     }
 
-
-    if (alreadyAdded(newPerson)) {
-      alert(`${newName} is already added to phonebook`)
-    } else {
-      personService
-        .create(newPerson)
-        .then(returnedPersons => {
-          setPersons(persons.concat(returnedPersons))
-          setNewName('')
-          setNewNumber('')
-        })
-    }
+    personService
+      .create(newPerson)
+      .then(addedPerson => {
+        setPersons(persons.concat(addedPerson))
+      })
   }
 
   const deletePerson = person => {
@@ -104,7 +117,7 @@ const App = () => {
       <h3>add a new</h3>
 
       <PersonForm
-        onSubmit={addPerson}
+        onSubmit={handleAdd}
         name={newName}
         onNameChange={event => setNewName(event.target.value)}
         number={newNumber}
