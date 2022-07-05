@@ -29,8 +29,39 @@ const Flag = ({ flagUrl, alt }) => (
   <img src={flagUrl} alt={alt} />
 )
 
+const WeatherReport = ({ weather }) => {
+  if (Object.keys(weather).length === 0) {
+    return null
+  }
+
+  const temperature = weather.main.temp
+  const wind = weather.wind.speed
+
+  const iconCode = weather.weather[0].icon
+  const iconUrl = `http://openweathermap.org/img/wn/${iconCode}@2x.png`
+
+  return (
+    <div>
+      <p>temperature {temperature} Celcius</p>
+      <img src={iconUrl} />
+      <p>wind {wind} m/s</p>
+    </div>
+  )
+}
 const CountryData = ({ country }) => {
+  const [weather, setWeather] = useState({})
+
+  const capital = country.capital[0]
   const languages = Object.values(country['languages'])
+
+  useEffect(() => {
+    axios
+      .get(`https://api.openweathermap.org/data/2.5/weather?q=${capital}&appid=${process.env.REACT_APP_API_KEY}&units=metric`)
+      .then(response => {
+        setWeather(response.data)
+      })
+  }, [])
+
 
   return (
     <div>
@@ -48,6 +79,9 @@ const CountryData = ({ country }) => {
         flagUrl={country.flags.png}
         alt={`flag of ${country.name.common}`}
       />
+
+      <h3>Weather in {country.capital[0]}</h3>
+      <WeatherReport weather={weather} />
     </div>
   )
 }
@@ -73,11 +107,7 @@ const Countries = ({ countries, onCountryClick }) => {
     )
   }
 
-  return (
-    <div>
-      <p>No countries found</p>
-    </div>
-  )
+  return null
 }
 
 const App = () => {
