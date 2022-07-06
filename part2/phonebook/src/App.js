@@ -32,10 +32,30 @@ const Persons = ({ persons, deletePerson }) => (
   </div>
 )
 
-const Person = ({ person, deletePerson }) => {
+const Person = ({ person, deletePerson }) => (
+  <div>
+    {person['name']} {person['number']} <button onClick={deletePerson}>delete</button>
+  </div>
+)
+
+const Notification = ({ message, success }) => {
+  if (message === null) {
+    return null
+  }
+
+  const messageStyle = {
+    color: success ? 'green' : 'red',
+    background: 'lightgrey',
+    fontSize: '20px',
+    borderStyle: 'solid',
+    borderRadius: '10px',
+    padding: '10px',
+    marginBottom: '10px'
+  }
+
   return (
-    <div>
-      {person['name']} {person['number']} <button onClick={deletePerson}>delete</button>
+    <div style={messageStyle}>
+      {message}
     </div>
   )
 }
@@ -45,6 +65,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filter, setFilter] = useState('')
+  const [message, setMessage] = useState(null)
+  const [success, setSuccess] = useState(true)
 
   useEffect(() => {
     personService
@@ -53,6 +75,8 @@ const App = () => {
         setPersons(initialPersons)
       })
   }, [])
+
+  const resetMessage = () => setTimeout(() => setMessage(null), 5000)
 
   const filteredPersons = persons.filter(person =>
     person.name.toLowerCase().includes(filter.toLowerCase())
@@ -81,6 +105,13 @@ const App = () => {
       .update(changedPerson)
       .then(newPerson => {
         setPersons(persons.map(p => p.id !== newPerson.id ? p : newPerson))
+        setMessage(`Replaced ${newName}'s phone number`)
+        resetMessage()
+      })
+      .catch(error => {
+        setSuccess(false)
+        setMessage(`Information of ${newName} has already been removed from server`)
+        resetMessage()
       })
   }
 
@@ -94,6 +125,9 @@ const App = () => {
       .create(newPerson)
       .then(addedPerson => {
         setPersons(persons.concat(addedPerson))
+        setSuccess(true)
+        setMessage(`Added ${newName}`)
+        resetMessage()
       })
   }
 
@@ -104,6 +138,9 @@ const App = () => {
         .then(response => {
           const newPersons = persons.filter(p => p.id !== person.id)
           setPersons(newPersons)
+          setSuccess(true)
+          setMessage(`Deleted ${person['name']}`)
+          resetMessage()
         })
     }
   }
@@ -111,6 +148,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+
+      <Notification message={message} success={success} />
 
       <Filter value={filter} onChange={event => setFilter(event.target.value)} />
 
