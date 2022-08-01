@@ -105,6 +105,7 @@ const App = () => {
       .update(changedPerson)
       .then(newPerson => {
         setPersons(persons.map(p => p.id !== newPerson.id ? p : newPerson))
+        setSuccess(true)
         setMessage(`Replaced ${newName}'s phone number`)
         resetMessage()
       })
