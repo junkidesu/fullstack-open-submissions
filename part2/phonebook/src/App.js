@@ -129,6 +129,11 @@ const App = () => {
         setMessage(`Added ${newName}`)
         resetMessage()
       })
+      .catch(error => {
+        setSuccess(false)
+        setMessage(error.response.data.error)
+        resetMessage()
+      })
   }
 
   const deletePerson = person => {
