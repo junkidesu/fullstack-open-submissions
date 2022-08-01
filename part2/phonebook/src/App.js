@@ -111,7 +111,7 @@ const App = () => {
       })
       .catch(error => {
         setSuccess(false)
-        setMessage(`Information of ${newName} has already been removed from server`)
+        setMessage(error.response.data.error)
         resetMessage()
       })
   }
